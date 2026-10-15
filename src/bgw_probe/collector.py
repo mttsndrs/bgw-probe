@@ -77,14 +77,6 @@ def _without_none(values: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in values.items() if value is not None}
 
 
-def _value_for(mapping: dict[str, str], *names: str) -> str | None:
-    for name in names:
-        value = mapping.get(name)
-        if value is not None:
-            return value
-    return None
-
-
 class GatewayClient:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
@@ -187,23 +179,9 @@ class Collector:
         fiber_data = _without_none(
             {
                 "optical_wan_operational_status": _status(
-                    _value_for(
-                        fiber,
-                        "Optical WAN Operational Status",
-                        "Link State",
-                        "Fiber Status",
-                        "Status",
-                    )
+                    fiber.get("Optical WAN Operational Status")
                 ),
-                "link_state": _status(
-                    _value_for(
-                        fiber,
-                        "Link State",
-                        "Fiber Link",
-                        "Fiber Connection",
-                        "Connection",
-                    )
-                ),
+                "link_state": _status(fiber.get("Link State")),
                 "fiber_module": _status(fiber.get("Fiber Module")),
                 "opt_powerlvl": _number(fiber.get("OPT Powerlvl")),
                 "opt_los": _number(fiber.get("OPT LOS")),
