@@ -30,6 +30,57 @@ PAGES = {
         <tr><td>IP Passthrough</td><td>Off</td></tr>
       </table>
     """,
+    "fiber": """
+      <table>
+        <tr><td>Optical WAN Operational Status</td><td>Up</td></tr>
+        <tr><td>Link State</td><td>Up</td></tr>
+        <tr><td>Fiber Module</td><td>Unavailable</td></tr>
+        <tr><td>Alarm</td><td>0 (Threshold -50)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold -45)</td></tr>
+        <tr><td>OPT Powerlvl</td><td>2</td></tr>
+        <tr><td>OPT LOS</td><td>0</td></tr>
+        <tr><td>OPT Tx Fault</td><td>0</td></tr>
+        <tr><td>OPT Tx Disable</td><td>0</td></tr>
+        <tr><td>Rx LOS State</td><td>1</td></tr>
+        <tr><td>Tx Fault State</td><td>0</td></tr>
+        <tr><td>Tx Disable State</td><td>0</td></tr>
+        <tr><td>Rate Select State</td><td>0</td></tr>
+        <tr><td>Data Ready Bar State</td><td>0</td></tr>
+        <tr><td>Wave Length</td><td>1270 nm</td></tr>
+        <tr><td>Length SMF-km</td><td>40</td></tr>
+        <tr><td>Vendor SN</td><td>SECRET-TRANSCEIVER-SERIAL</td></tr>
+      </table>
+      <h1>Temperature&nbsp;&nbsp;Currently 40</h1>
+      <table summary="Temperature table">
+        <tr><th></th><th>Low</th><th>High</th></tr>
+        <tr><td>Alarm</td><td>0 (Threshold -50)</td><td>0 (Threshold 95)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold -45)</td><td>0 (Threshold 90)</td></tr>
+      </table>
+      <h1>Vcc&nbsp;&nbsp;Currently 33000</h1>
+      <table summary="Test results for Vcc">
+        <tr><th></th><th>Low</th><th>High</th></tr>
+        <tr><td>Alarm</td><td>0 (Threshold 30000)</td><td>0 (Threshold 36000)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold 31000)</td><td>0 (Threshold 35000)</td></tr>
+      </table>
+      <h1>Tx Bias&nbsp;&nbsp;Currently 6000</h1>
+      <table summary="Tx Bias table">
+        <tr><th></th><th>Low</th><th>High</th></tr>
+        <tr><td>Alarm</td><td>0 (Threshold 5000)</td><td>0 (Threshold 15000)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold 6000)</td><td>0 (Threshold 12000)</td></tr>
+      </table>
+      <h1>Tx Power&nbsp;&nbsp;Currently 33</h1>
+      <table summary="Tx Power table">
+        <tr><th></th><th>Low</th><th>High</th></tr>
+        <tr><td>Alarm</td><td>0 (Threshold -10)</td><td>0 (Threshold 59)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold 0)</td><td>0 (Threshold 49)</td></tr>
+      </table>
+      <h1>Rx Power&nbsp;&nbsp;Currently -186</h1>
+      <table summary="Rx Power table">
+        <tr><th></th><th>Low</th><th>High</th></tr>
+        <tr><td>Alarm</td><td>0 (Threshold -292)</td><td>0 (Threshold -90)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold -279)</td><td>0 (Threshold -100)</td></tr>
+      </table>
+    """,
 }
 
 
@@ -40,8 +91,61 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(result["gateway"]["uptime_seconds"], 93784)
         self.assertEqual(result["broadband"]["rx_bytes"], 1234)
         self.assertEqual(result["broadband"]["tx_errors"], 2)
+        self.assertEqual(result["fiber"]["status"], "up")
+        self.assertEqual(result["fiber"]["link_state"], "up")
+        self.assertEqual(result["fiber"]["module_status"], "unavailable")
+        self.assertEqual(result["fiber"]["alarm"], 0)
+        self.assertEqual(result["fiber"]["warning"], 0)
+        self.assertEqual(result["fiber"]["optical_power_level"], 2)
+        self.assertEqual(result["fiber"]["optical_los"], 0)
+        self.assertEqual(result["fiber"]["tx_fault"], 0)
+        self.assertEqual(result["fiber"]["tx_disable"], 0)
+        self.assertEqual(result["fiber"]["rx_los_state"], 1)
+        self.assertEqual(result["fiber"]["wavelength_nm"], 1270)
+        self.assertEqual(result["fiber"]["length_smf_km"], 40)
+        self.assertEqual(
+            result["fiber"]["sensors"],
+            {
+                "temperature_c": {
+                    "current": 40,
+                    "alarm_low": -50,
+                    "alarm_high": 95,
+                    "warning_low": -45,
+                    "warning_high": 90,
+                },
+                "vcc_v": {
+                    "current": 3.3,
+                    "alarm_low": 3,
+                    "alarm_high": 3.6,
+                    "warning_low": 3.1,
+                    "warning_high": 3.5,
+                },
+                "tx_bias_a": {
+                    "current": 0.012,
+                    "alarm_low": 0.01,
+                    "alarm_high": 0.03,
+                    "warning_low": 0.012,
+                    "warning_high": 0.024,
+                },
+                "tx_power_dbm": {
+                    "current": 3.3,
+                    "alarm_low": -1,
+                    "alarm_high": 5.9,
+                    "warning_low": 0,
+                    "warning_high": 4.9,
+                },
+                "rx_power_dbm": {
+                    "current": -18.6,
+                    "alarm_low": -29.2,
+                    "alarm_high": -9,
+                    "warning_low": -27.9,
+                    "warning_high": -10,
+                },
+            },
+        )
         rendered = str(result)
         self.assertNotIn("SECRET-SERIAL", rendered)
+        self.assertNotIn("SECRET-TRANSCEIVER-SERIAL", rendered)
         self.assertNotIn("00:11:22:33:44:55", rendered)
         self.assertNotIn("203.0.113.25", rendered)
 

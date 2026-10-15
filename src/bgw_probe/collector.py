@@ -12,12 +12,13 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from .config import Settings
-from .parser import parse_label_value_rows
+from .parser import parse_fiber_sensors, parse_label_value_rows
 
 PAGE_PATHS = {
     "system": "/cgi-bin/sysinfo.ha",
     "broadband": "/cgi-bin/broadbandstatistics.ha",
     "firewall": "/cgi-bin/firewall.ha",
+    "fiber": "/cgi-bin/fiberstat.ha",
 }
 
 
@@ -44,6 +45,14 @@ def _number(value: str | None) -> int | float | None:
     return int(parsed) if parsed.is_integer() else parsed
 
 
+def _scaled_number(value: str | None, divisor: int = 1) -> int | float | None:
+    number = _number(value)
+    if number is None:
+        return None
+    scaled = number / divisor
+    return int(scaled) if scaled.is_integer() else scaled
+
+
 def _duration_seconds(value: str | None) -> int | None:
     if not value:
         return None
@@ -66,6 +75,14 @@ def _duration_seconds(value: str | None) -> int | None:
 
 def _without_none(values: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in values.items() if value is not None}
+
+
+def _value_for(mapping: dict[str, str], *names: str) -> str | None:
+    for name in names:
+        value = mapping.get(name)
+        if value is not None:
+            return value
+    return None
 
 
 class GatewayClient:
@@ -111,11 +128,14 @@ class Collector:
     def collect(self) -> dict[str, Any]:
         started = time.monotonic()
         parsed: dict[str, dict[str, str]] = {}
+        raw_pages: dict[str, str] = {}
         failures: dict[str, str] = {}
 
         for page in PAGE_PATHS:
             try:
-                values = parse_label_value_rows(self.fetch(page))
+                html = self.fetch(page)
+                raw_pages[page] = html
+                values = parse_label_value_rows(html)
                 if not values:
                     raise ValueError("no table rows")
                 parsed[page] = values
@@ -125,7 +145,8 @@ class Collector:
         system = parsed.get("system", {})
         broadband = parsed.get("broadband", {})
         firewall = parsed.get("firewall", {})
-
+        fiber = parsed.get("fiber", {})
+        fiber_sensors = parse_fiber_sensors(raw_pages.get("fiber", ""))
         gateway_data = _without_none(
             {
                 "manufacturer": _text(system.get("Manufacturer")),
@@ -163,6 +184,59 @@ class Collector:
                 "advanced": _status(firewall.get("Firewall Advanced")),
             }
         )
+        fiber_data = _without_none(
+            {
+                "status": _status(
+                    _value_for(
+                        fiber,
+                        "Optical WAN Operational Status",
+                        "Link State",
+                        "Fiber Status",
+                        "Status",
+                    )
+                ),
+                "link_state": _status(
+                    _value_for(
+                        fiber,
+                        "Link State",
+                        "Fiber Link",
+                        "Fiber Connection",
+                        "Connection",
+                    )
+                ),
+                "module_status": _status(fiber.get("Fiber Module")),
+                "optical_power_level": _number(fiber.get("OPT Powerlvl")),
+                "alarm": _number(fiber.get("Alarm")),
+                "warning": _number(fiber.get("Warning")),
+                "optical_los": _number(fiber.get("OPT LOS")),
+                "tx_fault": _number(fiber.get("OPT Tx Fault")),
+                "tx_disable": _number(fiber.get("OPT Tx Disable")),
+                "rx_los_state": _number(fiber.get("Rx LOS State")),
+                "tx_fault_state": _number(fiber.get("Tx Fault State")),
+                "tx_disable_state": _number(fiber.get("Tx Disable State")),
+                "rate_select_state": _number(fiber.get("Rate Select State")),
+                "data_ready_state": _number(fiber.get("Data Ready Bar State")),
+                "wavelength_nm": _number(fiber.get("Wave Length")),
+                "length_smf_km": _number(fiber.get("Length SMF-km")),
+            }
+        )
+        normalized_sensors: dict[str, dict[str, Any]] = {}
+        for name, source_name, divisor in (
+            ("temperature_c", "temperature", 1),
+            ("vcc_v", "vcc", 10_000),
+            ("tx_bias_a", "tx_bias", 500_000),
+            ("tx_power_dbm", "tx_power", 10),
+            ("rx_power_dbm", "rx_power", 10),
+        ):
+            sensor_data = _without_none(
+                {
+                    field: _scaled_number(value, divisor)
+                    for field, value in fiber_sensors.get(source_name, {}).items()
+                }
+            )
+            if sensor_data:
+                normalized_sensors[name] = sensor_data
+        fiber_data["sensors"] = normalized_sensors
 
         required_data_ok = bool(gateway_data.get("model")) and bool(
             broadband_data.get("connection")
@@ -181,6 +255,7 @@ class Collector:
             "gateway": gateway_data,
             "broadband": broadband_data,
             "firewall": firewall_data,
+            "fiber": fiber_data,
             "collector": {
                 "duration_ms": round((time.monotonic() - started) * 1000),
                 "successful_pages": sorted(parsed),

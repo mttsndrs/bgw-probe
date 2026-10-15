@@ -25,7 +25,13 @@ Network dashboard card built from those signals.
 - Negotiated speed and duplex
 - Packet, byte, drop, error, collision, and discard counters
 - High-level firewall feature states
+- Fiber operational/link state, optical transceiver indicators, and sensor
+  readings with alarm/warning thresholds
 - Collector freshness and per-page success or failure
+
+Fiber sensor readings are normalized to °C, V, A, and dBm. Each sensor includes
+`current`, `alarm_low`, `alarm_high`, `warning_low`, and `warning_high` values
+when present.
 
 The output deliberately excludes serial numbers, MAC addresses, IP addresses,
 DNS addresses, Wi-Fi settings, logs, and credentials.
