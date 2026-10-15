@@ -186,7 +186,7 @@ class Collector:
         )
         fiber_data = _without_none(
             {
-                "status": _status(
+                "optical_wan_operational_status": _status(
                     _value_for(
                         fiber,
                         "Optical WAN Operational Status",
@@ -204,19 +204,17 @@ class Collector:
                         "Connection",
                     )
                 ),
-                "module_status": _status(fiber.get("Fiber Module")),
-                "optical_power_level": _number(fiber.get("OPT Powerlvl")),
-                "alarm": _number(fiber.get("Alarm")),
-                "warning": _number(fiber.get("Warning")),
-                "optical_los": _number(fiber.get("OPT LOS")),
-                "tx_fault": _number(fiber.get("OPT Tx Fault")),
-                "tx_disable": _number(fiber.get("OPT Tx Disable")),
+                "fiber_module": _status(fiber.get("Fiber Module")),
+                "opt_powerlvl": _number(fiber.get("OPT Powerlvl")),
+                "opt_los": _number(fiber.get("OPT LOS")),
+                "opt_tx_fault": _number(fiber.get("OPT Tx Fault")),
+                "opt_tx_disable": _number(fiber.get("OPT Tx Disable")),
                 "rx_los_state": _number(fiber.get("Rx LOS State")),
                 "tx_fault_state": _number(fiber.get("Tx Fault State")),
                 "tx_disable_state": _number(fiber.get("Tx Disable State")),
                 "rate_select_state": _number(fiber.get("Rate Select State")),
-                "data_ready_state": _number(fiber.get("Data Ready Bar State")),
-                "wavelength_nm": _number(fiber.get("Wave Length")),
+                "data_ready_bar_state": _number(fiber.get("Data Ready Bar State")),
+                "wave_length": _number(fiber.get("Wave Length")),
                 "length_smf_km": _number(fiber.get("Length SMF-km")),
             }
         )
