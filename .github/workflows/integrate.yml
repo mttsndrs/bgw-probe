@@ -3,8 +3,8 @@ name: Integrate Branches
 on:
   push:
     branches:
-      - fiber-sensor-status
       - uptime-fix
+      - fiber-sensor-status
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 jobs:
@@ -31,18 +31,23 @@ jobs:
           # 2. Reset it completely to main to ensure a clean base
           git reset --hard origin/main
           
-          # 3. Fetch latest changes from remote branches
-          git fetch origin fiber-sensor-status
-          git fetch origin uptime-fix
+          # 3. Read the source branches from the push trigger configuration
+          branches=$(awk '
+            /^  push:/ { in_push=1; next }
+            in_push && /^  [^ ]/ { in_push=0 }
+            in_push && /^      - / { sub(/^      - /, ""); print }
+          ' .github/workflows/integrate.yml)
+          if [ -z "$branches" ]; then
+            echo "No source branches found in on.push.branches" >&2
+            exit 1
+          fi
 
-          # 4. Merge uptime-fix into integration
-          echo "Merging uptime-fix..."
-          git merge origin/uptime-fix --no-edit
-
-          # 5. Merge fiber-sensor-status into integration
-          # -X theirs automatically resolves shared-file conflicts in favor of the latest branch merged
-          echo "Merging fiber-sensor-status..."
-          git merge origin/fiber-sensor-status -X theirs --no-edit
+          # 4. Fetch and merge each configured source branch in order
+          while IFS= read -r branch; do
+            echo "Fetching and merging $branch..."
+            git fetch origin "$branch"
+            git merge "origin/$branch" -X theirs --no-edit
+          done <<< "$branches"
 
           # 6. Force-push the newly combined integration branch to GitHub
           git push origin integration --force
