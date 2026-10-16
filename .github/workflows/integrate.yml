@@ -5,6 +5,7 @@ on:
     branches:
       - uptime-fix
       - fiber-sensor-status
+      - log-cleanup
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 jobs:
