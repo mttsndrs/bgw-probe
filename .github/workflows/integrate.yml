@@ -1,0 +1,48 @@
+name: Integrate Branches
+
+on:
+  push:
+    branches:
+      - fiber-sensor-status
+      - uptime-fix
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  merge-to-integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push the merged code back to GitHub
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history so git can calculate merges
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build Integration Branch
+        run: |
+          # 1. Switch to integration branch (create it if missing)
+          git checkout integration || git checkout -b integration
+          
+          # 2. Reset it completely to main to ensure a clean base
+          git reset --hard origin/main
+          
+          # 3. Fetch latest changes from remote branches
+          git fetch origin fiber-sensor-status
+          git fetch origin uptime-fix
+
+          # 4. Merge uptime-fix into integration
+          echo "Merging uptime-fix..."
+          git merge origin/uptime-fix --no-edit
+
+          # 5. Merge fiber-sensor-status into integration
+          # -X theirs automatically resolves shared-file conflicts in favor of the latest branch merged
+          echo "Merging fiber-sensor-status..."
+          git merge origin/fiber-sensor-status -X theirs --no-edit
+
+          # 6. Force-push the newly combined integration branch to GitHub
+          git push origin integration --force
