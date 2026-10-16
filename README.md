@@ -29,9 +29,10 @@ Network dashboard card built from those signals.
   readings with alarm/warning thresholds
 - Collector freshness and per-page success or failure
 
-Fiber sensor readings are normalized to °C, V, A, and dBm. Each sensor includes
-`current`, `alarm_low`, `alarm_high`, `warning_low`, and `warning_high` values
-when present.
+Fiber sensor readings include `current`, `alarm_low`, `alarm_high`,
+`warning_low`, and `warning_high` values when present. Temperature is
+normalized to °C and Tx/Rx power to dBm; `vcc` and `tx_bias` are emitted as raw
+gateway values without unit conversion.
 
 The output deliberately excludes serial numbers, MAC addresses, IP addresses,
 DNS addresses, Wi-Fi settings, logs, and credentials.

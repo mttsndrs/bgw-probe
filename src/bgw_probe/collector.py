@@ -196,11 +196,11 @@ class Collector:
                 "length_smf_km": _number(fiber.get("Length SMF-km")),
             }
         )
-        normalized_sensors: dict[str, dict[str, Any]] = {}
+        sensor_values: dict[str, dict[str, Any]] = {}
         for name, source_name, divisor in (
             ("temperature_c", "temperature", 1),
-            ("vcc_v", "vcc", 10_000),
-            ("tx_bias_a", "tx_bias", 500_000),
+            ("vcc", "vcc", 1),
+            ("tx_bias", "tx_bias", 1),
             ("tx_power_dbm", "tx_power", 10),
             ("rx_power_dbm", "rx_power", 10),
         ):
@@ -211,8 +211,8 @@ class Collector:
                 }
             )
             if sensor_data:
-                normalized_sensors[name] = sensor_data
-        fiber_data["sensors"] = normalized_sensors
+                sensor_values[name] = sensor_data
+        fiber_data["sensors"] = sensor_values
 
         required_data_ok = bool(gateway_data.get("model")) and bool(
             broadband_data.get("connection")

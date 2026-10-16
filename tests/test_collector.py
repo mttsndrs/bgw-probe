@@ -56,17 +56,17 @@ PAGES = {
         <tr><td>Alarm</td><td>0 (Threshold -50)</td><td>0 (Threshold 95)</td></tr>
         <tr><td>Warning</td><td>0 (Threshold -45)</td><td>0 (Threshold 90)</td></tr>
       </table>
-      <h1>Vcc&nbsp;&nbsp;Currently 33000</h1>
+      <h1>Vcc&nbsp;&nbsp;Currently 3</h1>
       <table summary="Test results for Vcc">
         <tr><th></th><th>Low</th><th>High</th></tr>
-        <tr><td>Alarm</td><td>0 (Threshold 30000)</td><td>0 (Threshold 36000)</td></tr>
-        <tr><td>Warning</td><td>0 (Threshold 31000)</td><td>0 (Threshold 35000)</td></tr>
+        <tr><td>Alarm</td><td>0 (Threshold 3)</td><td>0 (Threshold 3)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold 3)</td><td>0 (Threshold 3)</td></tr>
       </table>
-      <h1>Tx Bias&nbsp;&nbsp;Currently 6000</h1>
+      <h1>Tx Bias&nbsp;&nbsp;Currently 6</h1>
       <table summary="Tx Bias table">
         <tr><th></th><th>Low</th><th>High</th></tr>
-        <tr><td>Alarm</td><td>0 (Threshold 5000)</td><td>0 (Threshold 15000)</td></tr>
-        <tr><td>Warning</td><td>0 (Threshold 6000)</td><td>0 (Threshold 12000)</td></tr>
+        <tr><td>Alarm</td><td>0 (Threshold 0)</td><td>0 (Threshold 500)</td></tr>
+        <tr><td>Warning</td><td>0 (Threshold 0)</td><td>0 (Threshold 400)</td></tr>
       </table>
       <h1>Tx Power&nbsp;&nbsp;Currently 33</h1>
       <table summary="Tx Power table">
@@ -115,19 +115,19 @@ class CollectorTests(unittest.TestCase):
                     "warning_low": -45,
                     "warning_high": 90,
                 },
-                "vcc_v": {
-                    "current": 3.3,
+                "vcc": {
+                    "current": 3,
                     "alarm_low": 3,
-                    "alarm_high": 3.6,
-                    "warning_low": 3.1,
-                    "warning_high": 3.5,
+                    "alarm_high": 3,
+                    "warning_low": 3,
+                    "warning_high": 3,
                 },
-                "tx_bias_a": {
-                    "current": 0.012,
-                    "alarm_low": 0.01,
-                    "alarm_high": 0.03,
-                    "warning_low": 0.012,
-                    "warning_high": 0.024,
+                "tx_bias": {
+                    "current": 6,
+                    "alarm_low": 0,
+                    "alarm_high": 500,
+                    "warning_low": 0,
+                    "warning_high": 400,
                 },
                 "tx_power_dbm": {
                     "current": 3.3,
