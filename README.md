@@ -25,7 +25,16 @@ Network dashboard card built from those signals.
 - Negotiated speed and duplex
 - Packet, byte, drop, error, collision, and discard counters
 - High-level firewall feature states
+- Fiber operational/link state, optical transceiver indicators, and sensor
+  readings with alarm/warning thresholds
 - Collector freshness and per-page success or failure
+
+The probe requests the fiber page on BGW320 models only. A fiber-page failure is
+reported in `collector.failed_pages` and does not change overall gateway health.
+Fiber sensor readings include `current`, `alarm_low`, `alarm_high`,
+`warning_low`, and `warning_high` values when present. Temperature is
+normalized to °C and Tx/Rx power to dBm; `vcc` and `tx_bias` are emitted as raw
+gateway values without unit conversion.
 
 The output deliberately excludes serial numbers, MAC addresses, IP addresses,
 DNS addresses, Wi-Fi settings, logs, and credentials.
@@ -76,6 +85,7 @@ An example Home Assistant Network dashboard card built from those entities:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
+| `BGW_LOG_LEVEL` | `INFO` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`; invalid values use `INFO`) |
 | `BGW_URL` | `https://192.168.1.254` | Gateway root URL |
 | `BGW_TIMEOUT_SECONDS` | `8` | Per-page request timeout |
 | `BGW_POLL_INTERVAL_SECONDS` | `60` | Collection interval |
